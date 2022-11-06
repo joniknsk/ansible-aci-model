@@ -1,0 +1,10 @@
+---
+fabric01:
+  hosts:
+    apic1:
+      apic_host: sandboxapicdc.cisco.com
+      apic_username: admin
+      apic_password: "!v3G@!4@Y"
+  vars:
+    apic_use_proxy: no
+    apic_validate_certs: no
