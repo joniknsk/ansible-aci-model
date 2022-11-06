@@ -1,3 +1,2 @@
 ---
-- include_tasks: main-json.yml
-#- include_tasks: main-yaml.yml
+- include_tasks: deploy.yml
