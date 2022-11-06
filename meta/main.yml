@@ -1,8 +1,8 @@
 ---
 galaxy_info:
-  author: Ramses Smeyers
-  description: Comprehensive Ansible role to model and deploy Cisco ACI fabrics
-  company: Cisco
+  author: Ramses Smeyers, Evgenii Peregudov
+  description: A sample Ansible project to model and deploy payload on top of Cisco ACI fabrics
+  company: Cisco, Private Person
   license: GPLv3
   min_ansible_version: 2.4
   platforms:
