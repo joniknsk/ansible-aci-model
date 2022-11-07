@@ -1,52 +1,83 @@
-# Ansible Role: aci-model
-A comprehensive Ansible role to model and deploy Cisco ACI fabrics.
+# Ansible Project: ansible-aci-model
+A sample Ansible project to model and deploy payload on top of Cisco ACI fabrics.
 
-This role provides an abstraction layer that is convenient to use. By providing your required configuration (a structured dataset) in your inventory this role will perform the needed actions to ensure that configuration is deployd on your ACI infrastructure.
+This project provides an abstraction layer that is convenient to use. By providing your required configuration (a structured dataset) in your inventory this project will perform the needed actions to ensure that configuration is deployed on your ACI infrastructure.
 
-Using this role you can easily set up demo environment, maintain a lab or use it as the basis for your in-house ACI infrastructure. It can help you understand how ACI works while prototyping and testing. No prior Ansible or ACI knowledge is required to get started.
+Using this project you can easily set up demo environment, maintain a lab or use it as the basis for your in-house ACI infrastructure. It can help you understand how ACI works while prototyping and testing. No prior Ansible or ACI knowledge is required to get started.
 
 
 ## Requirements
-This role requires the **aci_rest** module and the standard set of ACI modules from Ansible v2.4.
+This role requires the [cisco.aci](https://galaxy.ansible.com/cisco/aci) collection and the standard setup of Ansible.
 
 
 ## Installation
 
-### Install the aci-model role
-There are two ways you can test this role:
+### Install the environment
+You can install the working environment either by using the system-wide package manager or by using the Python virtual environment.
 
- 1. Installing it by cloning the Github repository
+Example commands to install Ansible and required dependencies packages for RHEL9 or its derivatives:
 
-        git clone https://github.com/datacenter/ansible-role-aci-model datacenter.aci-model
+      sudo dnf install -y ansible
+      sudo dnf install -y python3-lxml python3-cryptography python3-pyOpenSSL python3-dateutil
 
- 2. Install it using the ansible-galaxy command
+Example commands to create a Python virtual environment and install Ansible and required dependencies:
 
-        ansible-galaxy install datacenter.aci-model
+      python3 -m venv .venv
+      source .venv/bin/activate
+      pip install -U pip
+      pip install ansible
+      pip install -r requirements.txt
 
+### Install the project
+You can install this project by cloning the GitHub repository:
+
+    git clone https://github.com/joninsk/ansible-aci-model ansible-aci-model
+
+### Install the dependencies
+You can install the [cisco.aci](https://galaxy.ansible.com/cisco/aci) collection directly by using the following command:
+
+    ansible-galaxy collection install cisco.aci
+
+or from requirements file:
+
+    ansible-galaxy collection install -r requirements.yml
 
 ### Install the aci filter plugin
 In order to work with the provided ACI topology, a custom Jinja2 filter (*aci_listify*) is needed.
 You need to configure your Ansible to find this Jinja2 filter. There are two ways to do this:
 
- 1. Configure Ansible so it looks for the custom aci filter plugin:
+Configure Ansible so it looks for the custom aci filter plugin:
 
       ```ini
-      filter_plugin = /home/ansible/datacenter.aci-model/plugins/filter
+      filter_plugin = /home/user/ansible-aci-model/plugins/filter
       ```
 
- 2. Copy the filter plugin (*plugins/filter/aci.py*) into your designated filter plugin directory
+Or copy the filter plugin [plugins/filter/aci.py](plugins/filter/aci.py) into your designated filter plugin directory.
 
 Because of its general usefulness, we are looking into making this *aci_listify* filter more generic and make it part of the default Ansible filters.
 
+### Ensure the playbook can find your cisco.aci collection
+If you installed the collection from Galaxy, you should be fine to use the examples from GitHub:
 
+    ansible-galaxy collection list cisco.aci
+
+    # /usr/lib/python3.9/site-packages/ansible_collections
+    Collection Version
+    ---------- -------
+    cisco.aci  2.1.0
+
+    # /home/user/.ansible/collections/ansible_collections
+    Collection Version
+    ---------- -------
+    cisco.aci  2.3.0
 ## Using the example playbook
 
 ### Configure your APIC host and credentials
-Look inside the example inventory and provide the needed information.
+Look inside the example inventory [hosts](hosts) and provide the needed information.
 Only the first APIC is being use by the playbook, so you don't need more than one.
 
-#### Role variables
-The role accepts various variables, including:
+#### Access Credentials
+Access credentials have to be defined in the inventory:
 
 - apic_host
 - apic_username (defaults to 'admin')
@@ -55,18 +86,12 @@ The role accepts various variables, including:
 - apic_use_proxy (defaults to false)
 - apic_validate_certs (defaults to true)
 
-You can configure these as part of your host variables, or group variables.
-
-### Ensure the playbook can find your datacenter.aci-model role
-If you cloned it from Github, ensure you cloned it to a directory named datacenter.aci-model.
-Otherwise the playbook will not find the role with name "datacenter.aci-model".
-
-If you installed the role from Galaxy, you should be fine to use the examples from Github.
+You can configure these as part of your host variables or group variables.
 
 ### Running the example playbook
-Run the following command using Ansible v2.4:
+Run the following command using installed Ansible:
 
-    ansible-playbook -i example-inventory.yml example-playbook.yml -v
+    ansible-playbook main.yml -v
 
 The first time it will deploy that configuration on your ACI infrastructure.
 
@@ -76,70 +101,22 @@ You can make modifications and run it again as often as you like to modify the e
 ## Examples
 
 ### Example inventory
-The following is an example of a topology defined in your inventory you can use with this role:
-
-```yaml
-  aci_topology:
-    tenant:
-    - name: Example99
-      description: Example99
-      app:
-      - name: Billing
-        epg:
-        - name: web
-          bd: web_bd
-          contract:
-          - name: internet
-            type: consumer
-          - name: web_app
-            type: consumer
-        - name: app
-          bd: app_bd
-          contract:
-          - name: web_app
-            type: provider
-    bd:
-    - name: app_bd
-      subnet:
-      - name: 10.10.10.1
-        mask: 24
-        scope: private
-      vrf: Example99
-    - name: web_bd
-      subnet:
-      - name: 20.20.20.1
-        mask: 24
-        scope: public
-      vrf: Example99
-    vrf:
-    - name: Example99
-    contract:
-    - name: internet
-      scope: tenant
-      subject:
-      - name: internet
-        filter: default
-    - name: web_app
-      scope: tenant
-      subject:
-      - name: web_app
-        filter: default
-```
-A more comprehensive example is available from: [example-inventory.yaml](example-inventory.yaml)
+An example of a topology defined in [aci.yml](group_vars/fabric01/aci.yml) you can use with this model.
 
 ### Example playbook
 
 ```yaml
-- hosts: *apic1
+- name: Deploy topology using ACI model
+  hosts: '*apic1'
   gather_facts: no
-  roles:
-  - role: datacenter.aci-model
-    aci_model_data: '{{ aci_topology }}'
+  tasks:
+  - include_tasks: tasks/main.yml
 ```
 
 ## Notes
-- Over time when more ACI modules are released with Ansible, we will swap the **aci_rest** calls with the high-level module calls.
-- Feel free to add additional functionality and share it with us on Github !
+- This is a derivative of [datacenter/ansible-role-aci-model](https://github.com/datacenter/ansible-role-aci-model) role for demonstration of Ansible capabilities to configure the APIC fabrics.
+- The Cisco Sandbox APIC is an online testing environment hosted by Cisco.
+- Feel free to modify, extend and add additional functionality and share it on GitHub!
 
 
 ## License
